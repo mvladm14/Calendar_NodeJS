@@ -1,0 +1,2 @@
+C:\Users\Vlad\Documents\Visual Studio 2015\Projects\ExpressApp1\ExpressApp1\obj\Debug\CalendarNodeJS.njsprojResolveAssemblyReference.cache
+C:\Users\Vlad\Documents\Visual Studio 2015\Projects\ExpressApp1\ExpressApp1\bin\Microsoft.NodejsTools.WebRole.dll

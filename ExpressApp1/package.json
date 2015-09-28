@@ -1,0 +1,19 @@
+{
+  "name": "ExpressApp1",
+  "version": "0.0.0",
+  "description": "ExpressApp1",
+  "main": "app.js",
+  "author": {
+    "name": "Vlad",
+    "email": ""
+  },
+  "dependencies": {
+    "body-parser": "^1.14.0",
+    "cookie-parser": "^1.4.0",
+    "express": "3.4.4",
+    "jade": "*",
+    "mongodb": "^2.0.43",
+    "multer": "^1.0.5",
+    "stylus": "*"
+  }
+}
