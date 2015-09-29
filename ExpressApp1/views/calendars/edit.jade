@@ -1,0 +1,16 @@
+﻿extends ../layout
+
+block content
+    h1.
+        Calendar ID #{calendar._id}
+    form(action='/calendars/#{calendar._id}/edit',method='post',name='updatecalendar',enctype='application/x-www-form-urlencoded')
+        p Name: 
+            input#inputName(type='text', value='#{calendar.name}', name='name')
+        p Description: 
+            input#inputBadge(type='text', value='#{calendar.description}', name='description')
+        p Date: 
+            input#inputDate(type='date', value='#{calendar.date}', name='date')
+        p 
+            input(type='hidden',value='PUT',name='_method')
+        p 
+            button#btnSubmit(type='submit') UPDATE
