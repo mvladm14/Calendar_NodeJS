@@ -32,8 +32,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app.js" />
-    <Compile Include="model\calendars.js" />
+    <Compile Include="model\calendar.js" />
     <Compile Include="model\db.js" />
+    <Compile Include="model\event.js" />
     <Compile Include="routes\calendars.js" />
     <Compile Include="routes\index.js" />
     <Compile Include="routes\users.js" />
@@ -64,6 +65,10 @@
     <Content Include="public\stylesheets\style.styl" />
     <Content Include="README.md" />
     <Content Include="views\calendar.jade" />
+    <Content Include="views\calendars\edit.jade" />
+    <Content Include="views\calendars\index.jade" />
+    <Content Include="views\calendars\new.jade" />
+    <Content Include="views\calendars\show.jade" />
     <Content Include="views\contact.jade" />
     <Content Include="views\about.jade" />
     <Content Include="views\index.jade" />
@@ -78,6 +83,7 @@
     <Folder Include="public\stylesheets\" />
     <Folder Include="routes\" />
     <Folder Include="views\" />
+    <Folder Include="views\calendars\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

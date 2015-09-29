@@ -1,0 +1,22 @@
+﻿extends ../layout
+
+block content
+    h1.
+         #{title}
+    ul
+        - each calendar, i in calendars
+            li
+               p Name: #{calendar.name} 
+               p Description: #{calendar.description}
+               p Creation date: #{calendar.date}
+               p ID: #{calendar._id}
+                form(action='/calendars/#{calendar._id}/edit',method='post',enctype='application/x-www-form-urlencoded')
+                    input(type='hidden',value='DELETE',name='_method')
+                    button(type='submit').
+                        Delete
+                p 
+                    a(href='/calendars/#{calendar._id}/edit') Edit
+                p
+                    a(href='/calendars/#{calendar._id}') Show
+    p
+        a(href='/calendars/new') New
