@@ -32,7 +32,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app.js" />
+    <Compile Include="model\calendars.js" />
+    <Compile Include="model\db.js" />
+    <Compile Include="routes\calendars.js" />
     <Compile Include="routes\index.js" />
+    <Compile Include="routes\users.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="public\javascripts\bootstrap.js" />
@@ -66,6 +70,7 @@
     <Content Include="views\layout.jade" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="model\" />
     <Folder Include="public\" />
     <Folder Include="public\fonts\" />
     <Folder Include="public\images\" />
