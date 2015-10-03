@@ -15,9 +15,7 @@ var bodyParser = require('body-parser');
 
 var db = require('./model/db');
 var calendars = require('./model/calendar');
-var events = require('./model/event');
 
-var routes = require('./routes/index');
 var calendarController = require('./routes/calendars');
 
 var app = express();

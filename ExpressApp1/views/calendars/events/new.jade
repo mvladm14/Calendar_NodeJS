@@ -5,15 +5,15 @@ block content
         #{title}
     form#formAddEvent(name="addevent",method="post",action="/calendars/#{calendar._id}/events/new")
         p Name: 
-            input#inputName(type="text", placeholder="ex. John Smith", name="name")
+            input#inputName(type="text", placeholder="ex. event name", name="name")
         p Description:
-            input#inputDescription(type="text", placeholder="ex. John Smith", name="description")
-        p Date: 
-            input#inputDate(type="date", name="date")
+            input#inputDescription(type="text", placeholder="ex. description", name="description")
+        p Starting Time:
+            input#inputStartTime(type="date", placeholder="eg. mm/dd/yyyy hh:mm:ss", name="startTime")
+        p End Time:
+            input#inputEndTime(type="date", placeholder="eg. mm/dd/yyyy hh:mm:ss", name="endTime")
         p Priority: 
-            input#inputPriority(type="text", placeholder="priority", name="priority")
-        p Duration:
-              input#inputDuration(type="text", placeholder="duration", name="duration")
+            input#inputPriority(type="text", placeholder="eg. high, low", name="priority")        
         p 
             input(type='hidden',value='PUT',name='_method')
         p

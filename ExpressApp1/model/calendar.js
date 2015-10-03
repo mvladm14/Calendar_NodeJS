@@ -4,16 +4,15 @@ var eventSchema = new mongoose.Schema({
     eventID : Number,
     name : String,
     description: String,
-    date : Date,
     priority: String,
-    duration : Number
+    endTime : Date,
+    startTime: Date
 });
 
 var calendarSchema = new mongoose.Schema({
     calendarID : Number,
     name : String,
     description: String,
-    date : Date,
     events : [eventSchema] 
 });
 

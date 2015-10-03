@@ -48,12 +48,10 @@ router.route('/')
     // Get values from POST request. These can be done through forms or REST calls. These rely on the "name" attributes for forms
     var name = req.body.name;
     var description = req.body.description;
-    var date = req.body.date;
     //call the create function for our database
     mongoose.model('Calendar').create({
         name : name,
-        description : description,
-        date : date
+        description : description
     }, function (err, calendar) {
         if (err) {
             res.send("There was a problem adding the information to the database.");
@@ -170,14 +168,12 @@ router.put('/:id/edit', function (req, res) {
     // Get our REST or form values. These rely on the "name" attributes
     var name = req.body.name;
     var description = req.body.description;
-    var date = req.body.date;
     //find the calendar by ID
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
         //update it
         calendar.update({
             name : name,
-            description : description,
-            date : date
+            description : description
         }, function (err, calendarID) {
             if (err) {
                 res.send("There was a problem updating the information to the database: " + err);
@@ -249,8 +245,7 @@ router.get('/:id/events/new', function (req, res) {
                 //HTML response will render the 'edit.jade' template
                 html: function () {
                     res.render('calendars/events/new', {
-                        title: 'Add New Event for calendar: ' ,
-                        title: 'Calendar' + calendar._id,
+                        title: 'Add New Event for calendar: ' + calendar._id,
                         "calendar": calendar
                     });
                 },
@@ -268,16 +263,16 @@ router.put('/:id/events/new', function (req, res) {
     // Get values from POST request. These can be done through forms or REST calls. These rely on the "name" attributes for forms
     var name = req.body.name;
     var description = req.body.description;
-    var date = req.body.date;
-    var priority = req.body.priority
-    var duration = req.body.duration
+    var priority = req.body.priority;
+    var endTime = req.body.endTime;
+    var startTime = req.body.startTime;
     //call the create function for our database
     mongoose.model('Event').create({
         name : name,
         description : description,
-        date : date,
         priority: priority,
-        duration : duration
+        endTime : endTime,
+        startTime : startTime
     }, function (err, event) {
         if (err) {
             res.send("There was a problem adding the information to the database.");
@@ -289,7 +284,7 @@ router.put('/:id/events/new', function (req, res) {
                 //update it
                 calendar.events.push(event);
                 calendar.update({
-               events: calendar.events
+                    events: calendar.events
                 }, function (err, calendarID) {
                     if (err) {
                         res.send("There was a problem updating the information to the database: " + err);

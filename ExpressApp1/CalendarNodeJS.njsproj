@@ -34,10 +34,7 @@
     <Compile Include="app.js" />
     <Compile Include="model\calendar.js" />
     <Compile Include="model\db.js" />
-    <Compile Include="model\event.js" />
     <Compile Include="routes\calendars.js" />
-    <Compile Include="routes\index.js" />
-    <Compile Include="routes\users.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="public\javascripts\bootstrap.js" />
@@ -64,15 +61,12 @@
     <Content Include="public\stylesheets\bootstrap.min.css" />
     <Content Include="public\stylesheets\style.styl" />
     <Content Include="README.md" />
-    <Content Include="views\calendar.jade" />
     <Content Include="views\calendars\edit.jade" />
     <Content Include="views\calendars\index.jade" />
     <Content Include="views\calendars\new.jade" />
     <Content Include="views\calendars\show.jade" />
     <Content Include="views\contact.jade" />
-    <Content Include="views\about.jade" />
     <Content Include="views\calendars\events\new.jade" />
-    <Content Include="views\index.jade" />
     <Content Include="views\layout.jade" />
   </ItemGroup>
   <ItemGroup>
