@@ -36,6 +36,7 @@ router.route('/')
                 //JSON response will show all blobs in JSON format
                 json: function () {
                     res.json(calendars);
+               
                 }
             });
         }
@@ -77,11 +78,14 @@ router.route('/')
     })
 });
 
+
 /* GET New Calendar page. */
 router.route('/new')
     .get(function (req, res) {
     res.render('calendars/new', { title: 'Add New Calendar' });
 });
+
+
 
 // route middleware to validate :id
 router.param('id', function (req, res, next, id) {
@@ -113,7 +117,7 @@ router.param('id', function (req, res, next, id) {
         }
     });
 });
-
+//GET Calendar by ID
 router.route('/:id').get(function (req, res) {
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
         if (err) {
@@ -134,10 +138,10 @@ router.route('/:id').get(function (req, res) {
     });
 });
 
-//GET the individual calendar by Mongo ID
-router.get('/:id/edit', function(req, res) {
+//GET Edit Calendar Page
+router.get('/:id/edit', function (req, res) {
     //search for the calendar within Mongo
-    mongoose.model('Calendar').findById(req.id, function(err, calendar) {
+    mongoose.model('Calendar').findById(req.id, function (err, calendar) {
         if (err) {
             console.log('GET Error: There was a problem retrieving: ' + err);
         } else {
@@ -146,14 +150,14 @@ router.get('/:id/edit', function(req, res) {
             //format the date properly for the value to show correctly in our edit form
             res.format({
                 //HTML response will render the 'edit.jade' template
-                html: function() {
+                html: function () {
                     res.render('calendars/edit', {
                         title: 'Calendar' + calendar._id,
                         "calendar": calendar
                     });
                 },
                 //JSON response will return the JSON output
-                json: function() {
+                json: function () {
                     res.json(calendar);
                 }
             });
@@ -161,13 +165,13 @@ router.get('/:id/edit', function(req, res) {
     });
 });
 
-//PUT to update a blob by ID
+//PUT to update a Calendar by ID
 router.put('/:id/edit', function (req, res) {
     // Get our REST or form values. These rely on the "name" attributes
     var name = req.body.name;
     var description = req.body.description;
     var date = req.body.date;
-    //find the document by ID
+    //find the calendar by ID
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
         //update it
         calendar.update({
@@ -194,7 +198,7 @@ router.put('/:id/edit', function (req, res) {
     });
 });
 
-//DELETE a Blob by ID
+//DELETE a Calendar by ID
 router.delete('/:id/edit', function (req, res) {
     //find blob by ID
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
@@ -226,5 +230,92 @@ router.delete('/:id/edit', function (req, res) {
         }
     });
 });
+
+
+
+
+
+
+//GET Add new Event to Calendar Page
+router.get('/:id/events/new', function (req, res) {
+    mongoose.model('Calendar').findById(req.id, function (err, calendar) {
+        if (err) {
+            console.log('GET Error: There was a problem retrieving: ' + err);
+        } else {
+            //Return the calendar
+            console.log('GET Retrieving ID: ' + calendar._id);
+            //format the date properly for the value to show correctly in our edit form
+            res.format({
+                //HTML response will render the 'edit.jade' template
+                html: function () {
+                    res.render('calendars/events/new', {
+                        title: 'Add New Event for calendar: ' ,
+                        title: 'Calendar' + calendar._id,
+                        "calendar": calendar
+                    });
+                },
+                json: function () {
+                    res.json(calendar);
+                }
+
+            });
+        }
+    });
+});
+
+//add a new event
+router.put('/:id/events/new', function (req, res) {
+    // Get values from POST request. These can be done through forms or REST calls. These rely on the "name" attributes for forms
+    var name = req.body.name;
+    var description = req.body.description;
+    var date = req.body.date;
+    var priority = req.body.priority
+    var duration = req.body.duration
+    //call the create function for our database
+    mongoose.model('Event').create({
+        name : name,
+        description : description,
+        date : date,
+        priority: priority,
+        duration : duration
+    }, function (err, event) {
+        if (err) {
+            res.send("There was a problem adding the information to the database.");
+        } else {
+            //Event has been created
+            console.log('POST creating new event: ' + event);
+            //finding the calendar to add the event at
+            mongoose.model('Calendar').findById(req.id, function (err, calendar) {
+                //update it
+                calendar.events.push(event);
+                calendar.update({
+               events: calendar.events
+                }, function (err, calendarID) {
+                    if (err) {
+                        res.send("There was a problem updating the information to the database: " + err);
+                    } else {
+                        res.format({
+                            //HTML response will set the location and redirect back to the home page. 
+                            //You could also create a 'success' page if that 's your thing
+                            html: function () {
+                                // If it worked, set the header so the address bar doesn't still say /adduser
+                                res.location("calendars");
+                                // And forward to success page
+                                res.redirect("/calendars");
+                            },
+                            //JSON response will show the newly created blob
+                            json: function () {
+                                res.json(event);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+        
+    });
+
+});
+
 
 module.exports = router;

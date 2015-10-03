@@ -1,12 +1,12 @@
-﻿var mongoose = require('mongoose');
+﻿//var mongoose = require('mongoose');
 
-var eventSchema = new mongoose.Schema({
-    eventID : Number,
-    name : String,
-    description: String,
-    date : Date,
-    importance: String,
-    duration : Number
-});
+//var eventSchema = new mongoose.Schema({
+//    eventID : Number,
+//    name : String,
+//    description: String,
+//    date : Date,
+//    importance: String,
+//    duration : Number
+//});
 
-mongoose.model('Event', eventSchema);
+//mongoose.model('Event', eventSchema);

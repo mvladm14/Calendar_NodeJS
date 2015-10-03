@@ -1,16 +1,27 @@
 ﻿var mongoose = require('mongoose');
 
+var eventSchema = new mongoose.Schema({
+    eventID : Number,
+    name : String,
+    description: String,
+    date : Date,
+    priority: String,
+    duration : Number
+});
+
 var calendarSchema = new mongoose.Schema({
     calendarID : Number,
     name : String,
     description: String,
     date : Date,
-    events : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }]
+    events : [eventSchema] 
 });
 
-// the schema is useless so far
-// we need to create a model using it
+
+var Event = mongoose.model('Event', eventSchema);
 var Calendar = mongoose.model('Calendar', calendarSchema);
 
 // make this available to our users in our Node applications
+module.exports = Event;
 module.exports = Calendar;
+

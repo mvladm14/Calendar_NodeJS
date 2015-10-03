@@ -1,0 +1,20 @@
+﻿extends ../../layout
+
+block content
+    h1.
+        #{title}
+    form#formAddEvent(name="addevent",method="post",action="/calendars/#{calendar._id}/events/new")
+        p Name: 
+            input#inputName(type="text", placeholder="ex. John Smith", name="name")
+        p Description:
+            input#inputDescription(type="text", placeholder="ex. John Smith", name="description")
+        p Date: 
+            input#inputDate(type="date", name="date")
+        p Priority: 
+            input#inputPriority(type="text", placeholder="priority", name="priority")
+        p Duration:
+              input#inputDuration(type="text", placeholder="duration", name="duration")
+        p 
+            input(type='hidden',value='PUT',name='_method')
+        p
+            button#btnSubmit(type="submit") submit

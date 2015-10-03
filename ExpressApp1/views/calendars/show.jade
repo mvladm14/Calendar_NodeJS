@@ -4,5 +4,15 @@ block content
     h1.
         Infophoto #{calendar._id}
     p Name: #{calendar.name}
-    p Description: #{calendar.description}
+    p Description: #{calendar.priority}
     p Date: #{calendar.date}
+    p Events:  
+    ul
+        - each event, i in  calendar.events
+            li
+               p Name: #{event.name} 
+               p Description: #{event.description} 
+               p Date: #{event.date}
+               p Priority: #{event.priority}
+    p 
+                    a(href='/calendars/#{calendar._id}/events/new') Add event
