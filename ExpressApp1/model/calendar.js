@@ -6,7 +6,8 @@ var eventSchema = new mongoose.Schema({
     description: String,
     priority: String,
     endTime : Date,
-    startTime: Date
+    startTime: Date,
+    
 });
 
 var calendarSchema = new mongoose.Schema({

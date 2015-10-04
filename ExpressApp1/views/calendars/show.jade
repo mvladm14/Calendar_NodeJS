@@ -4,7 +4,7 @@ block content
     h1. 
         Calendar #{calendar.name}
 
-    p Description: #{calendar.priority}
+    p Description: #{calendar.description}
     p Events:  
     ul
         - each event, i in  calendar.events
@@ -14,6 +14,7 @@ block content
                p Start time: #{event.startTime}
                p End time: #{event.endTime}
                p Priority: #{event.priority}
+               a(href='/calendars/events/#{event._id}/edit') Edit event
               
     p 
                     a(href='/calendars/#{calendar._id}/events/new') Add event

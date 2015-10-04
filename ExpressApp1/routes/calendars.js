@@ -258,7 +258,7 @@ router.get('/:id/events/new', function (req, res) {
     });
 });
 
-//add a new event
+//POST: add a new event
 router.put('/:id/events/new', function (req, res) {
     // Get values from POST request. These can be done through forms or REST calls. These rely on the "name" attributes for forms
     var name = req.body.name;
@@ -282,6 +282,7 @@ router.put('/:id/events/new', function (req, res) {
             //finding the calendar to add the event at
             mongoose.model('Calendar').findById(req.id, function (err, calendar) {
                 //update it
+                console.log("Events" + calendar.events);
                 calendar.events.push(event);
                 calendar.update({
                     events: calendar.events
@@ -311,6 +312,84 @@ router.put('/:id/events/new', function (req, res) {
     });
 
 });
+
+
+
+//GET Add new Event to Calendar Page
+router.get('/events/:id/edit', function (req, res) {
+    mongoose.model('Event').findById(req.id, function (err, event) {
+        if (err) {
+            console.log('GET Error: There was a problem retrieving: ' + err);
+        } else {
+            //Return the calendar
+            console.log('GET Retrieving ID: ' + event._id);
+            //format the date properly for the value to show correctly in our edit form
+            res.format({
+                //HTML response will render the 'edit.jade' template
+                html: function () {
+                    res.render('calendars/events/edit', {
+                        title: 'Edit  Event: ' + event.name,
+                        "event": event
+                    });
+                },
+                json: function () {
+                    res.json(event);
+                }
+
+            });
+        }
+    });
+});
+
+
+router.put('/events/:id/edit', function (req, res) {
+    // Get our REST or form values. These rely on the "name" attributes
+    var name = req.body.name;
+    var description = req.body.description;
+    //find the event by ID--
+    //TODO search only through the calendars events
+    mongoose.model('Event').findById(req.id, function (err, event) {
+        //update it
+        event.update({
+            name : name,
+            description : description,
+            multi: true
+        }, function (err, eventID) {
+            if (err) {
+                res.send("There was a problem updating the information to the database: " + err);
+            } 
+            else {
+                mongoose.model('Calendar').findOneAndUpdate({ "events._id": req.id }, {
+                    '$set': {
+                        'events.$.name': event.name, 
+                        'events.$.description': event.description
+                    }
+                    
+                }
+                , function (err, calendar) {
+                    console.log("Calendar found!!!!" + calendar);
+                    if (err) {
+                        res.send("There was a problem updating the information to the database: " + err);
+                    }
+                    else {
+                        //HTML responds by going back to the page or you can be fancy and create a new view that shows a success page.
+                        res.format({
+                            html: function () {
+                                res.redirect("/calendars/");
+                            },
+                            //JSON responds showing the updated values
+                            json: function () {
+                                res.json(event);
+                            }
+                        });
+                    }
+
+                });
+            }
+        })
+    });
+});
+
 
 
 module.exports = router;
