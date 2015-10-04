@@ -93,7 +93,7 @@ router.param('id', function (req, res, next, id) {
         //if it isn't found, we are going to repond with 404
         if (err) {
             console.log(id + ' was not found');
-            res.status(404)
+            res.status(404);
             var err = new Error('Not Found');
             err.status = 404;
             res.format({
@@ -106,12 +106,34 @@ router.param('id', function (req, res, next, id) {
             });
         //if it is found we continue on
         } else {
-            //uncomment this next line if you want to see every JSON document response for every GET/PUT/DELETE call
-            //console.log(blob);
-            // once validation is done save the new item in the req
-            req.id = id;
-            // go to the next thing
-            next();
+            //search through events table
+            mongoose.model('Event').findById(id, function (err, calendar) {
+                //if it isn't found, we are going to repond with 404
+                if (err) {
+                    console.log(id + ' was not found');
+                    res.status(404);
+                    var err = new Error('Not Found');
+                    err.status = 404;
+                    res.format({
+                        html: function () {
+                            next(err);
+                        },
+                        json: function () {
+                            res.json({ message : err.status + ' ' + err });
+                        }
+                    });
+                }
+                else {
+                    // once validation is done save the new item in the req
+                    req.id = id;
+                    // go to the next thing
+                    next();
+                }
+                
+            });
+
+            
+            
         }
     });
 });
@@ -195,7 +217,7 @@ router.put('/:id/edit', function (req, res) {
 });
 
 //DELETE a Calendar by ID
-router.delete('/:id/edit', function (req, res) {
+router.delete('/:id', function (req, res) {
     //find blob by ID
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
         if (err) {
@@ -346,14 +368,19 @@ router.put('/events/:id/edit', function (req, res) {
     // Get our REST or form values. These rely on the "name" attributes
     var name = req.body.name;
     var description = req.body.description;
-    //find the event by ID--
-    //TODO search only through the calendars events
+    var startTime = req.body.startTime;
+    var endTime = req.body.endTime;
+    var priority = req.body.priority;
+    
+    //TODO maybe search  through the calendars events
     mongoose.model('Event').findById(req.id, function (err, event) {
         //update it
         event.update({
             name : name,
             description : description,
-            multi: true
+            startTime : startTime,
+            endTime : endTime,
+            priority : priority
         }, function (err, eventID) {
             if (err) {
                 res.send("There was a problem updating the information to the database: " + err);
@@ -361,13 +388,14 @@ router.put('/events/:id/edit', function (req, res) {
             else {
                 mongoose.model('Calendar').findOneAndUpdate({ "events._id": req.id }, {
                     '$set': {
-                        'events.$.name': event.name, 
-                        'events.$.description': event.description
+                        'events.$.name': name, 
+                        'events.$.description': description,
+                        'events.$.startTime': startTime,
+                        'events.$.endTime': endTime,
+                        'events.$.priority': priority
                     }
                     
-                }
-                , function (err, calendar) {
-                    console.log("Calendar found!!!!" + calendar);
+                }, function (err, calendar) {
                     if (err) {
                         res.send("There was a problem updating the information to the database: " + err);
                     }
@@ -389,6 +417,44 @@ router.put('/events/:id/edit', function (req, res) {
         })
     });
 });
+
+//DELETE a Calendar's Event by ID
+router.delete('/events/:id', function (req, res) {
+    //find blob by ID
+    mongoose.model('Calendar').findOne({ "events._id": req.id }, function (err, calendar) {
+        if (err) {
+            return console.error(err);
+        } else {
+            //remove it from Mongo
+            calendar.events.pull({ "_id": req.id });
+            console.log("CE A MAI RAMAS" + calendar.events)
+            calendar.update({
+                events: calendar.events
+            }, function (err, calendarID) {
+                if (err) {
+                    res.send("There was a problem updating the information to the database: " + err);
+                } else {
+                    //Returning success messages saying it was deleted
+                    res.format({
+                        //HTML returns us back to the main page, or you can create a success page
+                        html: function () {
+                            res.redirect("/calendars");
+                        },
+                        //JSON returns the item with the message that is has been deleted
+                        json: function () {
+                            res.json({
+                                message : 'deleted',
+                                item : calendar
+                            });
+                        }
+                    });
+                }
+            });
+           
+        }
+    });
+});
+
 
 
 
