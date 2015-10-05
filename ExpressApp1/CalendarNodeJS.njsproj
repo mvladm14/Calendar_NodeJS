@@ -63,6 +63,7 @@
     <Content Include="README.md" />
     <Content Include="views\calendars\edit.jade" />
     <Content Include="views\calendars\events\edit.jade" />
+    <Content Include="views\calendars\events\index.jade" />
     <Content Include="views\calendars\index.jade" />
     <Content Include="views\calendars\new.jade" />
     <Content Include="views\calendars\show.jade" />

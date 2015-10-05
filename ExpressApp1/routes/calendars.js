@@ -249,11 +249,6 @@ router.delete('/:id', function (req, res) {
     });
 });
 
-
-
-
-
-
 //GET Add new Event to Calendar Page
 router.get('/:id/events/new', function (req, res) {
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
@@ -454,6 +449,55 @@ router.delete('/events/:id', function (req, res) {
         }
     });
 });
+
+//GET Add new Event to Calendar Page
+router.get('/:id/events', function (req, res) {
+    mongoose.model('Calendar').findById(req.id, function (err, calendar) {
+        if (err) {
+            console.log('GET Error: There was a problem retrieving: ' + err);
+        } else {
+            //Return the calendar
+            console.log('GET Retrieving ID: ' + calendar._id);
+            //format the date properly for the value to show correctly in our edit form
+            
+            if (req.query.name == null) {
+                res.format({
+                    //HTML response will render the 'edit.jade' template
+                    html: function () {
+                        res.render('calendars/events/index', {
+                            title: 'Events',
+                            "events": calendar.events,
+                            "calendar": calendar
+                        });
+                    },
+                    json: function () {
+                        res.json(calendar.events);
+                    }
+                });
+            } else {
+                var name = req.query.name;
+                var events = calendar.events.filter(function (el) {
+                    return el.name === name;
+                });
+                
+                res.format({
+                    //HTML response will render the 'edit.jade' template
+                    html: function () {
+                        res.render('calendars/events/index', {
+                            title: 'Events',
+                            "events": events,
+                            "calendar": calendar
+                        });
+                    },
+                    json: function () {
+                        res.json(events);
+                    }
+                });
+            }
+        }
+    });
+});
+
 
 
 

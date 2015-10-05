@@ -1,0 +1,16 @@
+﻿extends ../../layout
+
+block content
+    h1.
+         #{title}
+    ul
+        - each event, i in events
+            li
+               p Name: #{event.name} 
+               p Description: #{event.description}
+
+    form#formSearchEvents(name="searchEvents",method="get",action="/calendars/#{calendar._id}/events")
+        p Name: 
+            input#inputName(type="text", placeholder="ex. John Smith", name="name")
+        p
+            button#btnSubmit(type="submit") search
