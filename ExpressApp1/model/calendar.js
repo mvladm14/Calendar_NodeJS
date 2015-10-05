@@ -4,6 +4,7 @@ var eventSchema = new mongoose.Schema({
     eventID : Number,
     name : String,
     description: String,
+    location: String,
     priority: String,
     endTime : Date,
     startTime: Date,
