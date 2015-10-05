@@ -8,9 +8,18 @@ block content
             li
                p Name: #{event.name} 
                p Description: #{event.description}
+               p Start time: #{event.startTime}
+               p End time: #{event.endTime}
+               p Location: #{event.location}
+               p Priority: #{event.priority}
 
     form#formSearchEvents(name="searchEvents",method="get",action="/calendars/#{calendar._id}/events")
-        p Name: 
-            input#inputName(type="text", placeholder="ex. John Smith", name="name")
+        p Location: 
+            input#inputLocation(type="text", placeholder="e.g New York", name="location")
+        p Date:
+            input#inputDate(type="date", placeholder="eg mm/dd/yyyy hh:mm:ss ", name="startTime")
         p
-            button#btnSubmit(type="submit") search
+            button#btnSubmit(type="submit") Search 
+        
+        
+        

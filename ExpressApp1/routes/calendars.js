@@ -249,6 +249,12 @@ router.delete('/:id', function (req, res) {
     });
 });
 
+
+
+//********************************EVENT PART ******************************************************************************************
+
+
+
 //GET Add new Event to Calendar Page
 router.get('/:id/events/new', function (req, res) {
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
@@ -280,6 +286,7 @@ router.put('/:id/events/new', function (req, res) {
     // Get values from POST request. These can be done through forms or REST calls. These rely on the "name" attributes for forms
     var name = req.body.name;
     var description = req.body.description;
+    var location = req.body.location;
     var priority = req.body.priority;
     var endTime = req.body.endTime;
     var startTime = req.body.startTime;
@@ -288,6 +295,7 @@ router.put('/:id/events/new', function (req, res) {
         name : name,
         description : description,
         priority: priority,
+        location : location,
         endTime : endTime,
         startTime : startTime
     }, function (err, event) {
@@ -325,14 +333,12 @@ router.put('/:id/events/new', function (req, res) {
                 });
             });
         }
-        
     });
-
 });
 
 
 
-//GET Add new Event to Calendar Page
+//GET Edit Event to Calendar Page
 router.get('/events/:id/edit', function (req, res) {
     mongoose.model('Event').findById(req.id, function (err, event) {
         if (err) {
@@ -363,6 +369,7 @@ router.put('/events/:id/edit', function (req, res) {
     // Get our REST or form values. These rely on the "name" attributes
     var name = req.body.name;
     var description = req.body.description;
+    var location = req.body.location;
     var startTime = req.body.startTime;
     var endTime = req.body.endTime;
     var priority = req.body.priority;
@@ -373,6 +380,7 @@ router.put('/events/:id/edit', function (req, res) {
         event.update({
             name : name,
             description : description,
+            location : location,
             startTime : startTime,
             endTime : endTime,
             priority : priority
@@ -385,6 +393,7 @@ router.put('/events/:id/edit', function (req, res) {
                     '$set': {
                         'events.$.name': name, 
                         'events.$.description': description,
+                        'events.$.location': location,
                         'events.$.startTime': startTime,
                         'events.$.endTime': endTime,
                         'events.$.priority': priority
@@ -422,7 +431,6 @@ router.delete('/events/:id', function (req, res) {
         } else {
             //remove it from Mongo
             calendar.events.pull({ "_id": req.id });
-            console.log("CE A MAI RAMAS" + calendar.events)
             calendar.update({
                 events: calendar.events
             }, function (err, calendarID) {
@@ -450,7 +458,7 @@ router.delete('/events/:id', function (req, res) {
     });
 });
 
-//GET Add new Event to Calendar Page
+//GET events of a calendar
 router.get('/:id/events', function (req, res) {
     mongoose.model('Calendar').findById(req.id, function (err, calendar) {
         if (err) {
@@ -460,46 +468,50 @@ router.get('/:id/events', function (req, res) {
             console.log('GET Retrieving ID: ' + calendar._id);
             //format the date properly for the value to show correctly in our edit form
             
-            if (req.query.name == null) {
-                res.format({
-                    //HTML response will render the 'edit.jade' template
-                    html: function () {
-                        res.render('calendars/events/index', {
-                            title: 'Events',
-                            "events": calendar.events,
-                            "calendar": calendar
-                        });
-                    },
-                    json: function () {
-                        res.json(calendar.events);
-                    }
-                });
-            } else {
-                var name = req.query.name;
-                var events = calendar.events.filter(function (el) {
-                    return el.name === name;
-                });
-                
-                res.format({
-                    //HTML response will render the 'edit.jade' template
-                    html: function () {
-                        res.render('calendars/events/index', {
-                            title: 'Events',
-                            "events": events,
-                            "calendar": calendar
-                        });
-                    },
-                    json: function () {
-                        res.json(events);
-                    }
-                });
+            var events = calendar.events;
+            if (typeof req.query.location !== "undefined") {
+                if (req.query.location.length > 0) {
+                    console.log("searching by location " + req.query.location);
+                    events = events.filter(function(el) {
+                        return el.location === req.query.location;
+                    });
+                }
             }
+            if (typeof req.query.startTime !== "undefined") {
+                if (req.query.startTime.length > 0) {
+                    
+                    
+                    var month = parseInt(req.query.startTime.substring(0, 2));
+                    var day = parseInt(req.query.startTime.substring(3, 5));
+                    var year = parseInt(req.query.startTime.substring(6, 10));
+                    var date = new Date(year, month-1, day);
+
+                    console.log("searching by startTime " + date);
+
+                    console.log("year = " + date.getYear() + " month = " + date.getMonth() + " day = " + date.getDay());
+                    events = events.filter(function (el) {
+                        return el.startTime.getYear() === date.getYear() &&
+                               el.startTime.getMonth() === date.getMonth() &&
+                               el.startTime.getDay() === date.getDay();
+                    });
+                }
+            }
+
+            res.format({
+                //HTML response will render the 'edit.jade' template
+                html: function () {
+                    res.render('calendars/events/index', {
+                        title: 'Events',
+                        "events": events,
+                        "calendar": calendar
+                    });
+                },
+                json: function () {
+                    res.json(events);
+                }
+            });
         }
     });
 });
-
-
-
-
 
 module.exports = router;
