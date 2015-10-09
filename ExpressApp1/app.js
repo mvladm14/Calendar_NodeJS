@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/calendars', calendarController);
+app.use('/api/v1/calendars', calendarController);
 
 // Create http server by passing "app" to it:
 http.createServer(app).listen(app.get('port'), function () {
