@@ -12,6 +12,8 @@ router.use(methodOverride(function (req, res) {
         delete req.body._method;
         return method;
     }
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 }));
 
 //build the REST operations at the base for calendars
@@ -124,7 +126,7 @@ router.route('/:id').get(function (req, res) {
             return console.error(err);
         } else {
             //remove it from Mongo
-            calendar.remove(function (err, calendar) {
+            calendar.remove(function (err, calendar2) {
                 if (err) {
                     return console.error(err);
                 } else {
@@ -132,7 +134,7 @@ router.route('/:id').get(function (req, res) {
                     console.log('DELETE removing ID: ' + calendar._id);
                     res.json({
                         message : 'deleted',
-                        item : calendar
+                        item : calendar2
                     });
                 }
             });
@@ -305,5 +307,6 @@ router.route('/events/:id/')
         }
     });
 });
+
 
 module.exports = router;
