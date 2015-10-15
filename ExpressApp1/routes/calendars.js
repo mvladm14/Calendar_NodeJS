@@ -3,6 +3,14 @@ var router = express.Router();
 var mongoose = require('mongoose'); //mongo connection
 var bodyParser = require('body-parser'); //parses information from POST
 var methodOverride = require('method-override'); //used to manipulate POST
+var fs = require('fs');
+var readline = require('readline');
+var google = require('googleapis');
+var googleAuth = require('google-auth-library');
+
+var SCOPES = ['https://www.googleapis.com/auth/calendar'];
+var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) + '/.credentials/';
+var TOKEN_PATH = TOKEN_DIR + 'calendar-nodejs-quickstart.json';
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(methodOverride(function (req, res) {
@@ -47,6 +55,19 @@ router.route('/')
             //Blob has been created
             console.log('POST creating new calendar: ' + calendar);
             res.json(calendar);
+        }
+    });
+});
+
+var firstCalendar;
+
+router.route('/synchronize').get(function (req, res) {
+    mongoose.model('Calendar').find({"name":"tttt"}, function (err, calendars) {
+        if (err) {
+            return console.error(err);
+        } else {
+            firstCalendar = calendars[0];
+            readJSONCredentials();
         }
     });
 });
@@ -141,8 +162,6 @@ router.route('/:id').get(function (req, res) {
         }
     });
 });
-
-
 
 //********************************EVENT PART *************************************************
 
@@ -308,5 +327,228 @@ router.route('/events/:id/')
     });
 });
 
+
+/******** SYNCRHONIZE WITH GOOGLE CALENDAR   ********/
+
+// Load client secrets from a local file.
+function readJSONCredentials() {
+    fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+        if (err) {
+            console.log('Error loading client secret file: ' + err);
+            return;
+        }
+        // Authorize a client with the loaded credentials, then call the
+        // Google Calendar API.
+        authorize(JSON.parse(content), synchronizeEvents);
+    });
+}
+
+
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ *
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ */
+function authorize(credentials, callback) {
+    var clientSecret = credentials.installed.client_secret;
+    var clientId = credentials.installed.client_id;
+    var redirectUrl = credentials.installed.redirect_uris[0];
+    var auth = new googleAuth();
+    var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    
+    // Check if we have previously stored a token.
+    fs.readFile(TOKEN_PATH, function (err, token) {
+        if (err) {
+            getNewToken(oauth2Client, callback);
+        } else {
+            oauth2Client.credentials = JSON.parse(token);
+            callback(oauth2Client);
+        }
+    });
+}
+
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ *
+ * @param {google.auth.OAuth2} oauth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback to call with the authorized
+ *     client.
+ */
+function getNewToken(oauth2Client, callback) {
+    var authUrl = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES
+    });
+    console.log('Authorize this app by visiting this url: ', authUrl);
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question('Enter the code from that page here: ', function (code) {
+        console.log(code);
+        rl.close();
+        
+        oauth2Client.getToken(code, function (err, token) {
+            if (err) {
+                console.log('Error while trying to retrieve access token', err);
+                return;
+            }
+            oauth2Client.credentials = token;
+            storeToken(token);
+            callback(oauth2Client);
+        });
+    });
+}
+
+/**
+ * Store token to disk be used in later program executions.
+ *
+ * @param {Object} token The token to store to disk.
+ */
+function storeToken(token) {
+    try {
+        fs.mkdirSync(TOKEN_DIR);
+    } catch (err) {
+        if (err.code != 'EEXIST') {
+            throw err;
+        }
+    }
+    fs.writeFile(TOKEN_PATH, JSON.stringify(token));
+    console.log('Token stored to ' + TOKEN_PATH);
+}
+
+/**
+ * Lists the next 10 events on the user's primary calendar.
+ *
+ * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
+ */
+function synchronizeEvents(auth) {
+    var calendar = google.calendar('v3');
+    
+    console.log("Synchronizing with: " + firstCalendar.name);
+    
+    //add google events to calendar from mongoDB
+    calendar.events.list({
+        auth: auth,
+        calendarId: 'primary',
+        timeMin: (new Date()).toISOString(),
+        maxResults: 10,
+        singleEvents: true,
+        orderBy: 'startTime'
+    }, function (err, response) {
+        if (err) {
+            console.log('The API returned an error: ' + err);
+            return;
+        }
+        var events = response.items;
+        if (events.length == 0) {
+            console.log('No upcoming events found.');
+        } else {
+            console.log('Upcoming 10 events:');
+            for (var i = 0; i < events.length; i++) {
+                var event = events[i];
+                var start = event.start.dateTime || event.start.date;
+                console.log('%s - %s', start, event.summary);
+                
+                mongoose.model('Event').create({
+                    name: event.summary,
+                    description: "from google calendar",
+                    startTime: start
+                }, function (err, eventMongoDB) {
+                    if (err) {
+                        console.log("There was a problem adding the information to the database.");
+                    } else {
+                        mongoose.model('Calendar').findById(firstCalendar._id, function (err, calendarFromMongoDB) {
+                            var exists = false;
+                            var calendarEvents = calendarFromMongoDB.events;
+                            for (var j = 0; j < calendarEvents.length; j++) {
+                                if (calendarEvents[j].name === eventMongoDB.name) {
+                                    exists = true;
+                                }
+                            }
+                            if (!exists) {
+                                calendarFromMongoDB.events.push(eventMongoDB);
+                                calendarFromMongoDB.update({
+                                    events: calendarFromMongoDB.events
+                                }, function (errUpdate, calendarID) {
+                                    if (err) {
+                                        console.log("There was a problem updating the information to the database: " + errUpdate);
+                                    } else {
+                                        console.log("Event added");
+                                    }
+                                });
+                            } else {
+                                console.log("Event already exists");
+                            }
+                        });
+                    }
+                }
+                );
+            }
+        }
+    });
+    
+    //add mongoDB events to google calendar
+    mongoose.model('Calendar').findById(firstCalendar._id, function (err, calendarFromMongoDB) {
+        
+        var mongoEvents = calendarFromMongoDB.events;
+        
+        calendar.events.list({
+            auth: auth,
+            calendarId: 'primary',
+            timeMin: (new Date()).toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: 'startTime'
+        }, function (err, response) {
+            if (err) {
+                console.log('The API returned an error: ' + err);
+                return;
+            }
+            var googleEvents = response.items;
+            for (var i = 0; i < mongoEvents.length; i++) {
+                var mongoEvent = mongoEvents[i];
+                var exists = false;
+                for (var j = 0; j < googleEvents.length; j++) {
+                    var googleEvent = googleEvents[j];
+                    if (mongoEvent.name === googleEvent.summary) {
+                        exists = true;
+                    }
+                }
+                
+                if (!exists) {
+                    var event = {
+                        'summary': mongoEvent.name,
+                        'location': mongoEvent.location,
+                        'description': mongoEvent.description,
+                        'start': {
+                            'dateTime': mongoEvent.startTime,
+                            'timeZone': 'America/Los_Angeles',
+                        },
+                        'end': {
+                            'dateTime': mongoEvent.endTime,
+                            'timeZone': 'America/Los_Angeles',
+                        }
+                    };
+                    calendar.events.insert({
+                        auth: auth,
+                        calendarId: 'primary',
+                        resource: event,
+                    }, function (err, event) {
+                        if (err) {
+                            console.log('There was an error contacting the Calendar service: ' + err);
+                            return;
+                        }
+                        console.log('Event %s created.', event.summary);
+                        console.log(event.htmlLink);
+                    });
+                }
+            }
+        });
+    });
+}
 
 module.exports = router;
