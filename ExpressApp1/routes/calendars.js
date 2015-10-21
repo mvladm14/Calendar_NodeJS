@@ -325,6 +325,28 @@ router.route('/events/:id/')
            
         }
     });
+})
+
+//GET a Calendar's Event by ID
+.get(function (req, res) {
+    console.log("hello world");
+    mongoose.model('Calendar').findOne({ "events._id": req.id }, function (err, calendar) {
+        if (err) {
+            console.log("ERROR");
+            return console.error(err);
+        } else {
+            var events = calendar.events;
+            console.log("Else");
+            var event = events.filter(function (el) {
+                console.log("Filtering");
+                return el._id == req.id;
+                   
+            });
+            console.log("Equals");
+            console.log('GET Retrieving ID: ' + event._id);
+            res.json(event);
+        }
+    });
 });
 
 
