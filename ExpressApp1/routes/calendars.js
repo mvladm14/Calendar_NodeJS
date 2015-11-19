@@ -309,6 +309,10 @@ router.route('/events/:id/')
             return console.error(err);
         } else {
             //remove it from Mongo
+            var calEvents = calendar.events;
+            calEvents = calEvents.filter(function (el) {
+                return el._id == req.id;
+            });
             calendar.events.pull({ "_id": req.id });
             calendar.update({
                 events: calendar.events
@@ -316,10 +320,7 @@ router.route('/events/:id/')
                 if (err) {
                     res.send("There was a problem updating the information to the database: " + err);
                 } else {
-                    res.json({
-                        message : 'deleted',
-                        item : calendar
-                    });
+                    res.json(calEvents[0]);
                 }
             });
            
